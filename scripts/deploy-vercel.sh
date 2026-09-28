@@ -1,13 +1,24 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+APP_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+cd "$APP_DIR"
+
+# Load .env automatically when shell variables are not already exported.
+if [[ -f .env ]]; then
+  set -a
+  # shellcheck disable=SC1091
+  source .env
+  set +a
+fi
+
 if [[ -z "${DASHSCOPE_API_KEY:-}" ]]; then
-  echo "ERROR: DASHSCOPE_API_KEY is not exported in this shell."
+  echo "ERROR: DASHSCOPE_API_KEY is missing. Put it in $APP_DIR/.env"
   exit 1
 fi
 
 if [[ -z "${DASHSCOPE_WORKSPACE_ID:-}" ]]; then
-  echo "ERROR: DASHSCOPE_WORKSPACE_ID is not exported in this shell."
+  echo "ERROR: DASHSCOPE_WORKSPACE_ID is missing. Put it in $APP_DIR/.env"
   exit 1
 fi
 
