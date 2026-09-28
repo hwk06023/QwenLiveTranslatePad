@@ -1,0 +1,17 @@
+# Reference template only. scripts/install.sh writes a service with the real paths/user.
+[Unit]
+Description=Qwen Live Translate Pad
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=YOUR_LINUX_USER
+WorkingDirectory=/path/to/QwenLiveTranslatePad
+EnvironmentFile=/path/to/QwenLiveTranslatePad/.env
+ExecStart=/path/to/QwenLiveTranslatePad/.venv/bin/uvicorn app.main:app --host 127.0.0.1 --port 8080
+Restart=on-failure
+RestartSec=3
+
+[Install]
+WantedBy=multi-user.target
