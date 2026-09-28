@@ -10,7 +10,4 @@ dependencies = [
 ]
 
 [tool.vercel]
-entrypoint = "main:app"
-
-[tool.vercel.fastapi.static]
-cdn = false
+entrypoint = "api.index:app"
