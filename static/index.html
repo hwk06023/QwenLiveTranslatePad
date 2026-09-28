@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>실시간 양방향 통역 패드</title>
+  <link rel="stylesheet" href="/static/style.css" />
+</head>
+<body>
+  <main class="app-shell">
+    <header class="topbar">
+      <div>
+        <p class="eyebrow">Qwen3.8 LiveTranslate</p>
+        <h1>실시간 양방향 통역 패드</h1>
+      </div>
+      <div class="controls">
+        <label>
+          <span>민원인 언어</span>
+          <select id="visitor-language" aria-label="민원인 언어"></select>
+        </label>
+        <button id="clear" class="secondary" type="button">화면 지우기</button>
+      </div>
+    </header>
+
+    <section class="status-row">
+      <span class="status-dot" aria-hidden="true"></span>
+      <span id="status">대기 중</span>
+    </section>
+
+    <section class="conversation-grid">
+      <article class="panel staff-panel">
+        <div class="panel-header">
+          <div>
+            <span class="role">직원</span>
+            <h2>한국어 → <span id="staff-target-name">English</span></h2>
+          </div>
+          <span class="badge">KOR</span>
+        </div>
+
+        <div class="transcript-card">
+          <span class="caption">내 말</span>
+          <div id="staff-source" class="transcript" aria-live="polite"></div>
+        </div>
+        <div class="transcript-card translated">
+          <span class="caption">번역</span>
+          <div id="staff-translation" class="transcript large" aria-live="polite"></div>
+        </div>
+
+        <button id="staff-talk" class="talk-button" type="button">
+          <span class="mic">●</span>
+          누른 채 한국어로 말하기
+        </button>
+      </article>
+
+      <article class="panel visitor-panel">
+        <div class="panel-header">
+          <div>
+            <span class="role">민원인</span>
+            <h2><span id="visitor-language-name">English</span> → 한국어</h2>
+          </div>
+          <span class="badge alt">AUTO</span>
+        </div>
+
+        <div class="transcript-card">
+          <span class="caption">상대방 말</span>
+          <div id="visitor-source" class="transcript" aria-live="polite"></div>
+        </div>
+        <div class="transcript-card translated">
+          <span class="caption">한국어 번역</span>
+          <div id="visitor-translation" class="transcript large" aria-live="polite"></div>
+        </div>
+
+        <button id="visitor-talk" class="talk-button visitor" type="button">
+          <span class="mic">●</span>
+          누른 채 말하기
+        </button>
+      </article>
+    </section>
+
+    <footer>
+      버튼을 누른 동안만 마이크 음성이 전송됩니다. 번역 음성은 브라우저 스피커로 재생됩니다.
+    </footer>
+  </main>
+  <script src="/static/app.js" defer></script>
+</body>
+</html>
