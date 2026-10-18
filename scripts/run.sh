@@ -18,4 +18,5 @@ set -a
 source .env
 set +a
 
-exec .venv/bin/uvicorn app.main:app --host "${APP_HOST:-127.0.0.1}" --port "${APP_PORT:-8080}" --reload
+# No --reload: it would restart the process and reload the GPU models on every edit.
+exec .venv/bin/uvicorn app.main:app --host "${APP_HOST:-127.0.0.1}" --port "${APP_PORT:-8090}" --ws-max-size 4194304

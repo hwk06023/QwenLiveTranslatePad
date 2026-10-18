@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="robots" content="noindex" />
+  <title>통역 패드 관리자</title>
+  <link rel="stylesheet" href="/style.css" />
+</head>
+<body class="admin">
+  <main class="app-shell">
+    <header class="topbar">
+      <div>
+        <p class="eyebrow">Qwen LiveTranslate · Admin</p>
+        <h1>관리자 콘솔</h1>
+        <p id="host-line" class="muted"></p>
+      </div>
+      <div class="controls">
+        <a class="secondary" href="/">시연 페이지</a>
+        <button id="logout" class="secondary" type="button" hidden>로그아웃</button>
+      </div>
+    </header>
+
+    <!-- Login -->
+    <section id="login-view" class="panel login-panel" hidden>
+      <h2>관리자 로그인</h2>
+      <form id="login-form">
+        <label>
+          <span>비밀번호</span>
+          <input id="password" type="password" autocomplete="current-password" required />
+        </label>
+        <button class="primary" type="submit">로그인</button>
+      </form>
+      <p id="login-error" class="error-text" role="alert"></p>
+    </section>
+
+    <div id="dashboard" hidden>
+      <!-- Engines & system -->
+      <section class="card-grid">
+        <article class="panel card">
+          <h3>엔진 설정</h3>
+          <div class="field">
+            <span class="label">기본 엔진</span>
+            <div id="default-engine" class="segmented" role="radiogroup" aria-label="기본 엔진">
+              <button type="button" role="radio" data-engine="local">온프렘 GPU</button>
+              <button type="button" role="radio" data-engine="api">클라우드 API</button>
+            </div>
+          </div>
+          <label class="toggle">
+            <input id="public-choice" type="checkbox" />
+            <span>시연 페이지에서 엔진 선택 허용</span>
+          </label>
+          <dl class="kv" id="api-info"></dl>
+        </article>
+
+        <article class="panel card">
+          <div class="card-head">
+            <h3>온프렘 엔진</h3>
+            <span id="local-state" class="pill">-</span>
+          </div>
+          <dl class="kv" id="local-info"></dl>
+          <div class="button-row">
+            <button id="local-load" class="secondary" type="button">모델 로드</button>
+            <button id="local-unload" class="secondary" type="button">언로드</button>
+          </div>
+          <p id="local-error" class="error-text"></p>
+        </article>
+
+        <article class="panel card">
+          <div class="card-head">
+            <h3>시스템</h3>
+            <span id="gpu-name" class="muted small"></span>
+          </div>
+          <div class="gauges">
+            <div class="gauge"><span class="label">GPU 사용률</span><strong id="g-util">-</strong><svg id="spark-util" class="spark" viewBox="0 0 120 32" preserveAspectRatio="none"></svg></div>
+            <div class="gauge"><span class="label">GPU 전력</span><strong id="g-power">-</strong><svg id="spark-power" class="spark" viewBox="0 0 120 32" preserveAspectRatio="none"></svg></div>
+            <div class="gauge"><span class="label">통합 메모리</span><strong id="g-mem">-</strong><div class="bar"><span id="g-mem-bar"></span></div></div>
+            <div class="gauge"><span class="label">GPU 클럭 · 온도</span><strong id="g-clock">-</strong><span id="g-temp" class="muted small"></span></div>
+          </div>
+          <dl class="kv" id="sys-info"></dl>
+        </article>
+      </section>
+
+      <!-- Live test console -->
+      <section class="panel console">
+        <div class="card-head">
+          <h3>라이브 테스트 콘솔</h3>
+          <div class="controls compact">
+            <div id="console-engine" class="segmented" role="radiogroup" aria-label="테스트 엔진">
+              <button type="button" role="radio" data-engine="local">온프렘</button>
+              <button type="button" role="radio" data-engine="api">API</button>
+            </div>
+            <select id="console-language" aria-label="상대 언어"></select>
+          </div>
+        </div>
+        <div class="console-grid">
+          <div>
+            <div class="mini-transcript"><span class="caption">원문</span><div id="c-source"></div></div>
+            <div class="mini-transcript"><span class="caption">번역</span><div id="c-translation"></div></div>
+            <div class="button-row">
+              <button id="c-staff" class="talk-button small" type="button">● 직원 (한국어 →)</button>
+              <button id="c-visitor" class="talk-button visitor small" type="button">● 민원인 (→ 한국어)</button>
+            </div>
+            <p id="c-status" class="muted small">버튼을 누른 채 말하면 이 턴의 상세 지연시간이 오른쪽에 표시됩니다.</p>
+          </div>
+          <div>
+            <div id="c-timeline" class="timeline empty">아직 측정된 턴이 없습니다.</div>
+            <dl id="c-metrics" class="kv metrics-kv"></dl>
+          </div>
+        </div>
+      </section>
+
+      <!-- Aggregates -->
+      <section class="panel">
+        <div class="card-head">
+          <h3>엔진별 지연시간 요약 <span class="muted small">(최근 300턴, 버튼 해제 기준 · p50 / p90 ms)</span></h3>
+          <button id="clear-metrics" class="secondary small" type="button">기록 초기화</button>
+        </div>
+        <div class="table-wrap"><table id="aggregate"></table></div>
+        <p class="muted small">
+          연결 = WebSocket 수락 → 엔진 준비 · 자막 = 원문 확정 · 번역 = 첫 번역 토큰 · 첫 음성 = 첫 번역 음성 청크 전송.
+          클라우드 API는 말하는 도중 스트리밍하므로 값이 음수일 수 있습니다(버튼을 떼기 전에 이미 출력).
+        </p>
+      </section>
+
+      <!-- Recent turns -->
+      <section class="panel">
+        <div class="card-head">
+          <h3>최근 턴</h3>
+          <span class="muted small">행을 누르면 단계별 상세가 열립니다. 대화 내용은 저장하지 않습니다.</span>
+        </div>
+        <div class="table-wrap"><table id="turns"></table></div>
+      </section>
+    </div>
+  </main>
+  <script type="module" src="/admin.js"></script>
+</body>
+</html>

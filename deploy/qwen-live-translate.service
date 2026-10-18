@@ -9,7 +9,7 @@ Type=simple
 User=YOUR_LINUX_USER
 WorkingDirectory=/path/to/QwenLiveTranslatePad
 EnvironmentFile=/path/to/QwenLiveTranslatePad/.env
-ExecStart=/path/to/QwenLiveTranslatePad/.venv/bin/uvicorn app.main:app --host 127.0.0.1 --port 8080
+ExecStart=/path/to/QwenLiveTranslatePad/.venv/bin/uvicorn app.main:app --host 127.0.0.1 --port 8090 --ws-max-size 4194304
 Restart=on-failure
 RestartSec=3
 

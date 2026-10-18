@@ -21,7 +21,7 @@ sudo -u "$RUN_USER" "$APP_DIR/.venv/bin/pip" install -r "$APP_DIR/requirements.t
 if [[ ! -f "$APP_DIR/.env" ]]; then
   cp "$APP_DIR/.env.example" "$APP_DIR/.env"
   chown "$RUN_USER":"$RUN_USER" "$APP_DIR/.env"
-  echo "Created $APP_DIR/.env -- fill in DASHSCOPE_API_KEY and DASHSCOPE_WORKSPACE_ID"
+  echo "Created $APP_DIR/.env -- set ADMIN_PASSWORD and (optionally) DASHSCOPE_API_KEY / DASHSCOPE_WORKSPACE_ID"
 fi
 
 cat > /etc/systemd/system/qwen-live-translate.service <<EOF
@@ -35,7 +35,7 @@ Type=simple
 User=$RUN_USER
 WorkingDirectory=$APP_DIR
 EnvironmentFile=$APP_DIR/.env
-ExecStart=$APP_DIR/.venv/bin/uvicorn app.main:app --host 127.0.0.1 --port 8080
+ExecStart=$APP_DIR/.venv/bin/uvicorn app.main:app --host 127.0.0.1 --port 8090 --ws-max-size 4194304
 Restart=on-failure
 RestartSec=3
 
@@ -48,6 +48,7 @@ systemctl daemon-reload
 echo
 echo "Install complete."
 echo "1) Edit: $APP_DIR/.env"
-echo "2) Test: bash $APP_DIR/scripts/run.sh"
-echo "3) Service: sudo systemctl enable --now qwen-live-translate"
-echo "4) For browser microphone access, serve it through HTTPS."
+echo "2) On-prem GPU engine: bash $APP_DIR/scripts/install-local.sh   (as $RUN_USER, not root)"
+echo "3) Test: bash $APP_DIR/scripts/run.sh"
+echo "4) Service: sudo systemctl enable --now qwen-live-translate"
+echo "5) For browser microphone access, serve it through HTTPS."

@@ -5,6 +5,10 @@
     {
       "source": "/api/:path*",
       "destination": "/api/index.py"
+    },
+    {
+      "source": "/admin",
+      "destination": "/admin.html"
     }
   ]
 }
