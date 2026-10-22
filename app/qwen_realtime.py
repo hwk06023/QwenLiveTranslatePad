@@ -4,13 +4,15 @@ import asyncio
 import base64
 import json
 import logging
+import time
 from contextlib import suppress
 from typing import Any
 
 import websockets
-from fastapi import WebSocket, WebSocketDisconnect
+from fastapi import WebSocketDisconnect
 
 from .config import Settings
+from .metrics import ClientChannel
 
 log = logging.getLogger(__name__)
 
@@ -26,8 +28,9 @@ SUPPORTED_TARGETS = {
 class QwenRealtimeBridge:
     """Bridges one browser push-to-talk session to one Qwen realtime session."""
 
-    def __init__(self, client: WebSocket, settings: Settings, target_language: str):
+    def __init__(self, client: ClientChannel, settings: Settings, target_language: str):
         self.client = client
+        self.rec = client.rec
         self.settings = settings
         self.target_language = target_language.lower().strip()
         self._upstream: Any | None = None
@@ -41,9 +44,11 @@ class QwenRealtimeBridge:
                     "message": f"Unsupported target language: {self.target_language}",
                 }
             )
-            await self.client.close(code=1008)
             return
 
+        self.rec.info["model"] = self.settings.model
+        self.rec.info["region"] = self.settings.region
+        connect_started = time.perf_counter()
         try:
             async with websockets.connect(
                 self.settings.qwen_ws_url,
@@ -56,7 +61,10 @@ class QwenRealtimeBridge:
                 close_timeout=5,
             ) as upstream:
                 self._upstream = upstream
+                self.rec.stage("upstream_connect", (time.perf_counter() - connect_started) * 1000)
+                init_started = time.perf_counter()
                 await self._initialize_session()
+                self.rec.stage("session_init", (time.perf_counter() - init_started) * 1000)
 
                 upstream_task = asyncio.create_task(self._upstream_to_browser())
                 browser_task = asyncio.create_task(self._browser_to_upstream())
@@ -287,8 +295,6 @@ class QwenRealtimeBridge:
 
             elif event_type == "session.finished":
                 await self._safe_send_json({"type": "session_finished"})
-                with suppress(Exception):
-                    await self.client.close(code=1000)
                 return
 
     @staticmethod
@@ -301,5 +307,4 @@ class QwenRealtimeBridge:
         return str(error)
 
     async def _safe_send_json(self, payload: dict[str, Any]) -> None:
-        with suppress(Exception):
-            await self.client.send_json(payload)
+        await self.client.send_json(payload)

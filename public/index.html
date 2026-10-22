@@ -10,10 +10,14 @@
   <main class="app-shell">
     <header class="topbar">
       <div>
-        <p class="eyebrow">Qwen3.8 LiveTranslate</p>
+        <p class="eyebrow">Qwen LiveTranslate · <span id="engine-eyebrow">Jetson Thor</span></p>
         <h1>실시간 양방향 통역 패드</h1>
       </div>
       <div class="controls">
+        <div id="engine-switch" class="segmented" role="radiogroup" aria-label="번역 엔진" hidden>
+          <button type="button" role="radio" data-engine="local">온프렘 GPU</button>
+          <button type="button" role="radio" data-engine="api">클라우드 API</button>
+        </div>
         <label>
           <span>민원인 언어</span>
           <select id="visitor-language" aria-label="민원인 언어"></select>
@@ -25,6 +29,7 @@
     <section class="status-row">
       <span class="status-dot" aria-hidden="true"></span>
       <span id="status">대기 중</span>
+      <span id="engine-chip" class="engine-chip" hidden></span>
     </section>
 
     <section class="conversation-grid">
@@ -58,7 +63,7 @@
             <span class="role">민원인</span>
             <h2><span id="visitor-language-name">English</span> → 한국어</h2>
           </div>
-          <span class="badge alt">AUTO</span>
+          <span id="visitor-badge" class="badge alt">AUTO</span>
         </div>
 
         <div class="transcript-card">
@@ -79,8 +84,9 @@
 
     <footer>
       버튼을 누른 동안만 마이크 음성이 전송됩니다. 번역 음성은 브라우저 스피커로 재생됩니다.
+      <a class="admin-link" href="/admin">관리자</a>
     </footer>
   </main>
-  <script src="/app.js" defer></script>
+  <script type="module" src="/app.js"></script>
 </body>
 </html>

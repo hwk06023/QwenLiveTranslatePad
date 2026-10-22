@@ -1,4 +1,6 @@
 .env
+.env.*
+!.env.example
 .venv/
 __pycache__/
 *.py[cod]
@@ -6,3 +8,6 @@ __pycache__/
 .DS_Store
 .vscode/
 .idea/
+.vercel
+models/
+runtime_settings.json
